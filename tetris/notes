@@ -1,0 +1,5 @@
+set up board and render
+set up tile queue
+set up tile enum
+set up piece enum
+set up rotation
