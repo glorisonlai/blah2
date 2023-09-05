@@ -62,70 +62,70 @@ export const TILESHAPES: { [key in TileKey]: number[][][] } = {
   ],
   J: [
     [
-      [0, 1, 1],
+      [1, 1, 0],
       [0, 1, 0],
       [0, 1, 0],
     ],
     [
-      [1, 1, 1],
       [0, 0, 1],
+      [1, 1, 1],
       [0, 0, 0],
     ],
     [
       [0, 1, 0],
       [0, 1, 0],
-      [1, 1, 0],
+      [0, 1, 1],
     ],
     [
-      [1, 0, 0],
       [1, 1, 1],
+      [1, 0, 0],
       [0, 0, 0],
     ],
   ],
   L: [
     [
-      [1, 1, 0],
+      [0, 1, 1],
       [0, 1, 0],
       [0, 1, 0],
     ],
     [
-      [0, 0, 1],
       [1, 1, 1],
+      [0, 0, 1],
       [0, 0, 0],
     ],
     [
       [0, 1, 0],
       [0, 1, 0],
-      [0, 1, 1],
+      [1, 1, 0],
     ],
     [
-      [1, 1, 1],
       [1, 0, 0],
+      [1, 1, 1],
       [0, 0, 0],
     ],
   ],
   S: [
     [
-      [0, 1, 1],
       [1, 1, 0],
+      [0, 1, 1],
       [0, 0, 0],
     ],
     [
-      [0, 1, 0],
-      [0, 1, 1],
       [0, 0, 1],
+      [0, 1, 1],
+      [0, 1, 0],
     ],
   ],
   Z: [
     [
-      [1, 1, 0],
       [0, 1, 1],
+      [1, 1, 0],
       [0, 0, 0],
     ],
     [
-      [0, 0, 1],
-      [0, 1, 1],
       [0, 1, 0],
+      [0, 1, 1],
+      [0, 0, 1],
     ],
   ],
   None: [[]],
@@ -181,7 +181,7 @@ export const moveTile = (tile: TilePos, dx: number, dy: number): TilePos => ({
   y: tile.y + dy,
 });
 
-const tileShape = (tile: TilePos): readonly number[][] =>
+const getTileShape = (tile: TilePos): readonly number[][] =>
   TILESHAPES[tile.tile][tile.rotation];
 
 export const initialState: State = {
@@ -192,6 +192,26 @@ export const initialState: State = {
   score: 0,
 } as const;
 
+const clearRow = (board: Board) => {
+  const clearedBoard = board.filter(row => row.some(e => e === 0))
+  const rowsCleared = board.length - clearedBoard.length
+
+  return clearedBoard.concat(Array(rowsCleared).fill(Array(COLUMNS).fill(TILESET.None)))
+}
+
+const checkPlaced = (s: State) => {
+  const tile = s.current
+
+  
+  const tileShape = getTileShape(tile)
+}
+
+const placeTile = (s: State) => ({
+  ...s,
+  current: s.preview,
+  preview: instantiateTile(),
+})
+
 /**
  * Updates the state by proceeding with one time step.
  *
@@ -201,7 +221,7 @@ export const initialState: State = {
 const tick = (s: State, [tick]) => {
   const { current, board } = s;
   const next = moveTile(current, 0, 1);
-  const nextShape = tileShape(next);
+  const nextShape = getTileShape(next);
 
   const nextBoard = board.map((row, y) =>
     row.map((tile, x) => {
