@@ -10,7 +10,7 @@ import {
   PREVIEW_WIDTH,
   ROWS,
 } from "./constants";
-import { State } from "./game";
+import { State, TILESHAPES, TileKey, TilePos, getTileShape } from "./game";
 
 const Block = {
   WIDTH: CANVAS_WIDTH / COLUMNS,
@@ -18,8 +18,8 @@ const Block = {
 };
 
 type CanvasElements = {
-  canvas: HTMLElement;
-  preview: HTMLElement;
+  canvas: HTMLCanvasElement;
+  preview: HTMLCanvasElement;
   gameOver: HTMLElement;
   container: HTMLElement;
   levelText: HTMLElement;
@@ -29,10 +29,8 @@ type CanvasElements = {
 
 const getCanvasElements = (): CanvasElements => {
   // Canvas elements
-  const canvas = document.querySelector("#svgCanvas") as SVGGraphicsElement &
-    HTMLElement;
-  const preview = document.querySelector("#svgPreview") as SVGGraphicsElement &
-    HTMLElement;
+  const canvas = document.querySelector("#svgCanvas") as HTMLCanvasElement;
+  const preview = document.querySelector("#svgPreview") as HTMLCanvasElement;
   const gameOver = document.querySelector("#gameOver") as SVGGraphicsElement &
     HTMLElement;
   const container = document.querySelector("#main") as HTMLElement;
@@ -105,6 +103,43 @@ const createSvgElement = (
   return elem;
 };
 
+const createBlock = (
+  ctx: CanvasRenderingContext2D,
+  id: TileKey,
+  x: number,
+  y: number,
+) => {
+  const blockColours: { [id in TileKey]: string } = {
+    T: "green",
+    I: "red",
+    O: "blue",
+    J: "yellow",
+    L: "purple",
+    S: "orange",
+    Z: "cyan",
+    None: "none",
+  };
+
+  ctx.fillStyle = blockColours[id];
+  ctx.fillRect(x, y, Block.WIDTH, Block.HEIGHT);
+};
+
+const createTile = (ctx: CanvasRenderingContext2D, tilePos: TilePos) => {
+  const { x, y, tile } = tilePos;
+  console.log(tilePos.rotation);
+  const shape = getTileShape(tilePos);
+  const length = shape.length;
+
+  shape.flat().map((block, i) => {
+    if (block === 0) return null;
+
+    const blockX = (x + (i % length)) * Block.WIDTH;
+    const blockY = (y + Math.floor(i / length)) * Block.HEIGHT;
+
+    createBlock(ctx, tile, blockX, blockY);
+  });
+};
+
 /**
  * Renders the current state to the canvas.
  *
@@ -114,44 +149,31 @@ const createSvgElement = (
  */
 const render = (s: State, canvasEls: CanvasElements) => {
   const { canvas, preview, gameOver } = canvasEls;
-  //
+
+  const context = canvas.getContext("2d")!;
+  context?.clearRect(0, 0, canvas.width, canvas.height);
+
+  const previewContext = preview.getContext("2d")!;
+  previewContext?.clearRect(0, 0, preview.width, preview.height);
+
   // Add blocks to the main grid canvas
-  const cube = createSvgElement(canvas.namespaceURI, "rect", {
-    height: `${Block.HEIGHT}`,
-    width: `${Block.WIDTH}`,
-    x: "0",
-    y: "0",
-    style: "fill: green",
+  s.board.forEach((row, y) => {
+    row.forEach((blockId, x) => {
+      if (blockId === "None") return;
+
+      createBlock(context, blockId, x * Block.WIDTH, y * Block.HEIGHT);
+    });
   });
-  canvas.appendChild(cube);
-  const cube2 = createSvgElement(canvas.namespaceURI, "rect", {
-    height: `${Block.HEIGHT}`,
-    width: `${Block.WIDTH}`,
-    x: `${Block.WIDTH * (3 - 1)}`,
-    y: `${Block.HEIGHT * (20 - 1)}`,
-    style: "fill: red",
-  });
-  canvas.appendChild(cube2);
-  const cube3 = createSvgElement(canvas.namespaceURI, "rect", {
-    height: `${Block.HEIGHT}`,
-    width: `${Block.WIDTH}`,
-    x: `${Block.WIDTH * (4 - 1)}`,
-    y: `${Block.HEIGHT * (20 - 1)}`,
-    style: "fill: red",
-  });
-  canvas.appendChild(cube3);
+
+  // Add current block to canvas
+  createTile(context, s.current);
 
   // Add a block to the preview canvas
-  const cubePreview = createSvgElement(preview.namespaceURI, "rect", {
-    height: `${Block.HEIGHT}`,
-    width: `${Block.WIDTH}`,
-    x: `${Block.WIDTH * 2}`,
-    y: `${Block.HEIGHT}`,
-    style: "fill: green",
-  });
-  preview.appendChild(cubePreview);
+  createTile(previewContext, s.preview);
 
+  console.log(s);
   if (s.gameEnd) {
+    console.log("hello");
     show(gameOver);
   } else {
     hide(gameOver);

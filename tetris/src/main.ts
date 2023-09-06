@@ -15,10 +15,19 @@
 import "./style.css";
 
 import { interval, merge } from "rxjs";
-import { map, filter, scan } from "rxjs/operators";
+import {
+  map,
+  filter,
+  scan,
+  withLatestFrom,
+  finalize,
+  take,
+  takeWhile,
+} from "rxjs/operators";
 import { getCanvasElements, instantiateCanvas, render } from "./render";
-import { State, initialState } from "./game";
+import { State, initialState, tick } from "./game";
 import { TICK_RATE_MS } from "./constants";
+import { input$, keyPress$ } from "./controller";
 
 /**
  * This is the function called on page load. Your main game loop
@@ -29,13 +38,11 @@ export function main(highScore: number) {
 
   instantiateCanvas(canvasEls, highScore);
 
-  /** Observables */
-
   /** Determines the rate of time steps */
   const tick$ = interval(TICK_RATE_MS);
 
   const source$ = merge(tick$)
-    .pipe(scan((s: State) => ({ ...s, gameEnd: true }), initialState))
+    .pipe(withLatestFrom(input$), scan(tick, initialState))
     .subscribe((s: State) => {
       render(s, canvasEls);
     });

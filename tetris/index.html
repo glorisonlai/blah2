@@ -5,15 +5,12 @@
   <body>
     <h1>Tetris</h1>
     <main id="main" class="flex row">
-      <svg id="svgCanvas">
+      <div id="gameOver" visibility="hidden" cursor="pointer">Game Over!</div>
+      <canvas id="svgCanvas" width="200" height="400">
         <!-- game over text box -->
-        <g id="gameOver" visibility="hidden">
-          <rect x="26" y="120" fill="white" height="48" width="149"></rect>
-          <text x="36" y="150">Game Over</text>
-        </g>
-      </svg>
+      </canvas>
       <div id="sideBar" class="flex col">
-        <svg id="svgPreview"></svg>
+        <canvas id="svgPreview" width="160" height="80"></canvas>
         <div id="info" class="flex col">
           <div class="text">
             <span class="left">Level: </span>
