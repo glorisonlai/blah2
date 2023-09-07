@@ -36,13 +36,18 @@ import { input$, keyPress$ } from "./controller";
 export function main(highScore: number) {
   const canvasEls = getCanvasElements();
 
+  // Set up initial DOM elements
   instantiateCanvas(canvasEls, highScore);
 
   /** Determines the rate of time steps */
   const tick$ = interval(TICK_RATE_MS);
 
+  // Event loop
+  // 1. Merge tick with latest player input
+  // 2. Accumulate state with tick/player input
+  // 3. Render game state
   const source$ = merge(tick$)
-    .pipe(withLatestFrom(input$), scan(tick, initialState))
+    .pipe(withLatestFrom(input$), scan(tick, initialState(highScore)))
     .subscribe((s: State) => {
       render(s, canvasEls);
     });

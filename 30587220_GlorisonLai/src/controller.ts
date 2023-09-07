@@ -22,6 +22,7 @@ export const keyPress$ = fromEvent<KeyboardEvent>(document, "keydown").pipe(
 
 const key$ = fromEvent<KeyboardEvent>(document, "keypress");
 
+// Filters keypress events for keyCode
 const fromKey = (keyCode: Key) =>
   key$.pipe(filter(({ code }) => code === keyCode));
 
@@ -30,6 +31,7 @@ const right$ = fromKey("KeyD").pipe(map(() => "KeyD"));
 const down$ = fromKey("KeyS").pipe(map(() => "KeyS"));
 const space$ = fromKey("Space").pipe(map(() => "Space"));
 
+// keypress stream until player lifts key
 export const input$ = merge(left$, right$, down$, space$).pipe(
   startWith("None"),
   takeUntil(fromEvent(document, "keyup")),

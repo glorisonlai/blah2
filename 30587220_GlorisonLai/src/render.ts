@@ -51,6 +51,7 @@ const getCanvasElements = (): CanvasElements => {
   };
 };
 
+// instantiateCanvas sets up visual DOM elements
 const instantiateCanvas = (canvasEls: CanvasElements, highScore = 0) => {
   const { canvas, preview, levelText, scoreText, highScoreText, gameOver } =
     canvasEls;
@@ -82,27 +83,7 @@ const show = (elem: HTMLElement) => {
  */
 const hide = (elem: HTMLElement) => elem.setAttribute("visibility", "hidden");
 
-/**
- * Creates an SVG element with the given properties.
- *
- * See https://developer.mozilla.org/en-US/docs/Web/SVG/Element for valid
- * element names and properties.
- *
- * @param namespace Namespace of the SVG element
- * @param name SVGElement name
- * @param props Properties to set on the SVG element
- * @returns SVG element
- */
-const createSvgElement = (
-  namespace: string | null,
-  name: string,
-  props: Record<string, string> = {},
-) => {
-  const elem = document.createElementNS(namespace, name) as SVGElement;
-  Object.entries(props).forEach(([k, v]) => elem.setAttribute(k, v));
-  return elem;
-};
-
+// createBlock draws a box onto the canvas
 const createBlock = (
   ctx: CanvasRenderingContext2D,
   id: TileKey,
@@ -124,6 +105,7 @@ const createBlock = (
   ctx.fillRect(x, y, Block.WIDTH, Block.HEIGHT);
 };
 
+// createTile draws a tile onto canvas
 const createTile = (ctx: CanvasRenderingContext2D, tilePos: TilePos) => {
   const { x, y, tile } = tilePos;
   console.log(tilePos.rotation);
@@ -148,11 +130,13 @@ const createTile = (ctx: CanvasRenderingContext2D, tilePos: TilePos) => {
  * @param s Current state
  */
 const render = (s: State, canvasEls: CanvasElements) => {
-  const { canvas, preview, gameOver } = canvasEls;
+  const { canvas, preview, gameOver, scoreText, highScoreText } = canvasEls;
 
+  // Clear canvas state
   const context = canvas.getContext("2d")!;
   context?.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Clear preview state
   const previewContext = preview.getContext("2d")!;
   previewContext?.clearRect(0, 0, preview.width, preview.height);
 
@@ -171,7 +155,12 @@ const render = (s: State, canvasEls: CanvasElements) => {
   // Add a block to the preview canvas
   createTile(previewContext, s.preview);
 
-  console.log(s);
+  
+  // Update player score
+  scoreText.innerText = `${s.score}`
+  highScoreText.innerText = `${s.highScore}`
+
+  // Display Game Over UI
   if (s.gameEnd) {
     console.log("hello");
     show(gameOver);
